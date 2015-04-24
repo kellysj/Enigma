@@ -3,27 +3,30 @@ package enigmaCypher;
 import java.util.ArrayList;
 
 public class Rotor {
-	int[] lKey;	//a key mapping characters to a substitution character. all substituted characters are mapped to an in order set 
+	private int[] lKey;	//a key mapping characters to a substitution character. all substituted characters are mapped to an in order set 
 				//of characters represented by the index values
-	int[] rKey;	//reverse of the right facing key for left to right "re-traversals", 
+	private int[] rKey;	//reverse of the right facing key for left to right "re-traversals", 
 				//this is required since indicies represent actual characters so a reverse key must be created from the original
 	Rotor right;//the rotors to the right and left of the current rotor
 	Rotor left;
-	int keySize = 26;
+	private int keySize = 26;
+	private int startI;
+	private int endI;
 	public static void main(String args[]){
 		Rotor test = new Rotor(null,null);
 		Rotor testL = new Rotor(null,test);
 		Rotor testR = new Rotor(test,null);
+
 		test.left = testL;
 		test.right = testR;		
-		System.out.println("original: \n" + test.printRotor());
-		System.out.println("reversed: \n" + test.printReverseRotor());
-		/**
+		//System.out.println("right left: \n" + testR.left.printRotor());
+		//System.out.println("Left right: \n" + testL.right.printRotor());
+		//**
 		test.rotateUp();
-		System.out.println("bump down: \n" + test.printRotor());
+		System.out.println("bump down: \n" + test.printRotor() + "\n" + test.printReverseRotor());
 		test.rotateDown();
-		System.out.println("bump up: \n" + test.printRotor());
-		**/
+		System.out.println("bump up: \n" + test.printRotor() + "\n" + test.printReverseRotor());
+		/**/
 	}
 	/**A constructor that takes two other rotors as parameters and randomly creates a rotor key.
 	 * 
@@ -31,7 +34,9 @@ public class Rotor {
 	 * @param rightIn The rotor to the right, can be null if this is the rightmost static rotor
 	 */
 	Rotor(Rotor leftIn, Rotor rightIn){
+		
 		if(leftIn!=null){
+			this.left = leftIn;
 			if(leftIn.right==null){
 				leftIn.right = this;
 			}
@@ -40,6 +45,7 @@ public class Rotor {
 			}
 		}
 		if(rightIn!=null){
+			this.right = rightIn;
 			if(rightIn.left==null){
 				rightIn.left = this;
 			}
@@ -57,6 +63,8 @@ public class Rotor {
 			lKey[i] = valueHold.remove((int)((Math.random()*100.0)*((double)valueHold.size()/100)));
 		}
 		rKey = reverseKey(lKey);
+		startI = 0;
+		endI = lKey.length-1;
 	}
 	private int[] reverseKey(int[] in){
 		int[] key = new int[in.length];
@@ -99,6 +107,33 @@ public class Rotor {
 			}
 		}
 	}
+	/**A method to translate a key to the left side of the rotor
+	 * 
+	 * @param in
+	 * @return the translated key
+	 */
+	public int translateToLeft(int in){
+		in=in+startI;
+		if(in>=lKey.length){
+			in = in-lKey.length;
+		}
+		return lKey[in];
+	}
+	/**A method to translate a key to the right side of the rotor
+	 * 
+	 * @param in
+	 * @return the translated key
+	 */
+	public int translateToRight(int in){
+		in=in+startI;
+		if(in>=rKey.length){
+			in = in-rKey.length;
+		}
+		return rKey[in];		
+	}
+	/*A method to rotate the rotor by changing the starting index
+	 * 
+	 */
 	public void rotateUp(){
 		if(left!=null&&right!=null){
 			int temp = lKey[0];
@@ -128,7 +163,7 @@ public class Rotor {
 	 * 
 	 * @return
 	 */
-	public String printRotor(int[] in) {
+	private String printRotor(int[] in) {
 		String iOut = "";
 		String kOut = "";
 		for(int i = 0;i<in.length;i++){
